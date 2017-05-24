@@ -1,0 +1,9 @@
+
+Changes in Version 0.1.1
+
+  * set default values in get_series to make API arguments optional
+
+Changes in Version 0.1.0
+
+  * first functional release
+
