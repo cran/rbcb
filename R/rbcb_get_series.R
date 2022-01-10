@@ -55,11 +55,14 @@ get_series <- function(code, start_date = NULL, end_date = NULL, last = 0,
 
 .get_series = function(url) {
   res <- http_getter(url)
-  if (res$status_code != 200) {
-    stop("BCB API Request error, status code = ", res$status_code)
+  txt <- http_gettext(res, as = "text")
+  if (httr::status_code(res) != 200) {
+    msg <- sprintf("BCB API Request error %s\nContent returned:\n",
+                   httr::status_code(res))
+    stop(msg, txt)
+  } else {
+    txt
   }
-
-  http_gettext(res)
 }
 
 create_series = function(json_, x, as) {
