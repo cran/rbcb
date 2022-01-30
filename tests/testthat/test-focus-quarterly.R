@@ -2,6 +2,8 @@
 context("quarterly market expectations API")
 
 test_that("it should fetch data from quarterly market expectations API", {
+  skip_on_cran()
+
   indic <- "PIB Total"
   start_date <- "2018-01-01"
   end_date <- "2018-01-31"

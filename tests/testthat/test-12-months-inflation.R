@@ -2,6 +2,8 @@
 context("12 months inflation market expectations API")
 
 test_that("it should fetch data from 12-months-infl market expectations API", {
+  skip_on_cran()
+
   indic <- "IPCA"
   start_date <- "2018-06-22"
   end_date <- "2018-06-22"

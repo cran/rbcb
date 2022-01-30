@@ -2,6 +2,8 @@
 context("annual market expectations API")
 
 test_that("it should fetch data from annual market expectations API", {
+  skip_on_cran()
+
   indic <- "Balança comercial"
   start_date <- "2018-01-01"
   end_date <- "2018-01-31"
