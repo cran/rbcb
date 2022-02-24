@@ -2,6 +2,8 @@
 context("series object")
 
 test_that("it should create series objects", {
+  skip_on_cran()
+
   code = c(IBOVESPA = 7)
   x = series_obj(code)[[1]]
   expect_is(x, "series_obj")
@@ -17,7 +19,20 @@ test_that("it should create series objects", {
   expect_equal(x[[2]]$name, '433')
 })
 
+test_that("it should create series objects without load dataset info", {
+  skip_on_cran()
+
+  code = c(IBOVESPA = 7)
+  x = series_obj(code, load_info = FALSE)[[1]]
+  expect_is(x, "series_obj")
+  expect_equal(x$code, 7)
+  expect_equal(x$name, 'IBOVESPA')
+  expect_true(is.null(x$info))
+})
+
 test_that("it should create series url", {
+  skip_on_cran()
+
   url = "https://www3.bcb.gov.br/sgspub/consultarvalores/consultarValoresSeries.do?method=consultarGraficoPorId&hdOidSeriesSelecionadas=7"
   code = c(IBOVESPA = 7)
   x = series_obj(code)[[1]]
