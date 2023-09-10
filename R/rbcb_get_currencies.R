@@ -25,12 +25,13 @@ currency_url <- function(id, start_date, end_date) {
 clear_cache <- function() rm(list = ls(.CACHE_ENV), pos = .CACHE_ENV)
 
 get_valid_currency_list <- function(date = Sys.Date()) {
-  url2 <- sprintf("http://www4.bcb.gov.br/Download/fechamento/M%s.csv", format(date, "%Y%m%d"))
-  res <- http_getter(url2)
-  if (res$status_code == 200)
+  url2 <- sprintf("https://www4.bcb.gov.br/Download/fechamento/M%s.csv", format(date, "%Y%m%d"))
+  res <- try(http_getter(url2), silent = TRUE)
+  if (!is(res, "try-error")) {
     return(res)
-  else
+  } else {
     get_valid_currency_list(date - 1)
+  }
 }
 
 get_currency_list <- function() {
@@ -39,9 +40,8 @@ get_currency_list <- function() {
     return(get("TEMP_FILE_CURRENCY_LIST", envir = .CACHE_ENV))
   } else {
     res <- get_valid_currency_list()
-    x <- http_gettext(res)
-
-    df <- utils::read.table(text = x, sep = ";", header = TRUE, colClasses = "character")
+    x <- http_gettext(res, encoding="windows-1252")
+    df <- read.table(text = x, sep = ";", header = TRUE, colClasses = "character")
     names(df) <- c("code", "name", "symbol", "country_code", "country_name", "type", "exclusion_date")
 
     df <- within(df, {
@@ -69,13 +69,13 @@ currency_id_list <- function() {
     if (res$status_code != 200) {
       stop("BCB API Request error, status code = ", res$status_code)
     }
-    x <- httr::content(res, as = "text", encoding = "ISO-8859-1")
-    x <- xml2::read_html(x, encoding = "ISO-8859-1")
-    y <- xml2::xml_find_all(x, "//select[@name='ChkMoeda']/option")
+    x <- content(res, as = "text", encoding = "ISO-8859-1")
+    x <- read_html(x, encoding = "ISO-8859-1")
+    y <- xml_find_all(x, "//select[@name='ChkMoeda']/option")
     y <- lapply(y, function(x) {
       data.frame(
-        id = as.numeric(xml2::xml_attr(x, "value")),
-        name = xml2::xml_text(x),
+        id = as.numeric(xml_attr(x, "value")),
+        name = xml_text(x),
         stringsAsFactors = FALSE
       )
     })
@@ -90,7 +90,7 @@ get_currency_id <- function(symbol) {
   id_list <- suppressMessages(currency_id_list())
   all_currencies <- suppressMessages(get_currency_list())
   x <- merge(id_list, all_currencies)
-  max(x[x$symbol == symbol,]$id)
+  max(x[x$symbol == symbol, ]$id)
 }
 
 #' Get currency matrix from BCB
@@ -126,7 +126,7 @@ generate_currency_matrix <- function(x) {
     cur_mat <- matrix(0, nrow = length(c1), ncol = length(c1))
     colnames(cur_mat) <- ns
     rownames(cur_mat) <- ns
-    for (i in seq_along(c1)) cur_mat[,i] <- c1/c1[i]
+    for (i in seq_along(c1)) cur_mat[, i] <- c1 / c1[i]
     cur_mat
   }
   list(
@@ -159,22 +159,17 @@ get_all_currencies <- function(date) {
     ChkMoeda = 1
   )
   res <- http_poster(url, body = body, encode = "form")
-  if (res$status_code != 200)
-    stop("BCB API Request error")
-  x <- httr::content(res, as = "text")
-  # x <- http_gettext(res)
+  x <- http_gettext(res, encoding = "latin1", as = "text")
   m <- regexec("gerarCSVTodasAsMoedas&amp;id=(\\d+)", x)
-  if (length(m[[1]]) == 1 && m[[1]] == -1)
+  if (length(m[[1]]) == 1 && m[[1]] == -1) {
     stop("BCB API Request error")
+  }
   id <- regmatches(x, m)[[1]][2]
   url2 <- "https://ptax.bcb.gov.br/ptax_internet/consultaBoletim.do?method=gerarCSVTodasAsMoedas&id=%s"
   url2 <- sprintf(url2, id)
   res <- http_getter(url2)
-  if (res$status_code != 200)
-    stop("BCB API Request error")
-  # x <- httr::content(res, as = "text", encoding = "UTF-8")
   x <- http_gettext(res)
-  df <- utils::read.table(text = x, sep = ";", header = FALSE, colClasses = "character")
+  df <- read.table(text = x, sep = ";", header = FALSE, colClasses = "character")
   names(df) <- c("date", "code", "type", "symbol", "bid", "ask", "bid.USD", "ask.USD")
   df <- within(df, {
     date <- as.Date(date, "%d%m%Y")
@@ -182,9 +177,9 @@ get_all_currencies <- function(date) {
     ask <- as.numeric(sub(",", ".", ask))
   })
 
-  df <- df[,c("date", "symbol", "bid", "ask")]
+  df <- df[, c("date", "symbol", "bid", "ask")]
 
-  tibble::as_tibble(df[order(df$symbol),])
+  as_tibble(df[order(df$symbol), ])
 }
 
 #' List all currencies
@@ -201,7 +196,7 @@ get_all_currencies <- function(date) {
 #' @export
 list_currencies <- function() {
   x <- suppressMessages(get_currency_list())
-  tibble::as_tibble(x[is.na(x$exclusion_date),c("name", "code", "symbol", "country_name", "country_code")])
+  as_tibble(x[is.na(x$exclusion_date), c("name", "code", "symbol", "country_name", "country_code")])
 }
 
 #' Get currency values for a given period
@@ -232,27 +227,21 @@ list_currencies <- function() {
 #' get_currency("USD", "2017-03-01", "2017-03-10")
 #' }
 #' @export
-get_currency <- function(symbol, start_date, end_date, as = c('tibble', 'xts', 'data.frame', 'text')) {
+get_currency <- function(symbol, start_date, end_date, as = c("tibble", "xts", "data.frame", "text")) {
   as <- match.arg(as)
   id <- get_currency_id(symbol)
   url <- currency_url(id, start_date, end_date)
   res <- http_getter(url)
-  if (res$status_code != 200) {
-    stop("BCB API Request error, status code = ", res$status_code)
-  }
-  if (grepl("text/html", httr::headers(res)[['content-type']])) {
-    # x <- httr::content(res, as = 'text')
-    x <- http_gettext(res)
-    x <- xml2::read_html(x)
-    x <- xml2::xml_find_first(x, "//div[@class='msgErro']")
-    stop("BCB API returned error: ", xml2::xml_text(x))
+  if (grepl("text/html", headers(res)[["content-type"]])) {
+    stop("BCB API returned error")
   }
   csv_ <- http_gettext(res)
 
-  if (as == 'text')
+  if (as == "text") {
     return(csv_)
+  }
 
-  df_ <- utils::read.table(text = csv_, sep = ";", header = FALSE, colClasses = "character")
+  df_ <- read.table(text = csv_, sep = ";", header = FALSE, colClasses = "character")
   names(df_) <- c("date", "aa", "bb", "cc", "bid", "ask", "dd", "ee")
   df <- within(df_, {
     date <- as.Date(date, format("%d%m%Y"))
@@ -260,16 +249,15 @@ get_currency <- function(symbol, start_date, end_date, as = c('tibble', 'xts', '
     ask <- as.numeric(sub(",", ".", ask))
   })
 
-  df <- df[,c("date", "bid", "ask")]
+  df <- df[, c("date", "bid", "ask")]
 
-  if (as == 'tibble') {
-    df <- tibble::as_tibble(df)
-  } else if (as == 'xts') {
-    df <- xts::xts(df[,-1], df$date)
+  if (as == "tibble") {
+    df <- as_tibble(df)
+  } else if (as == "xts") {
+    df <- xts(df[, -1], df$date)
   }
 
   attr(df, "symbol") <- symbol
 
   df
 }
-

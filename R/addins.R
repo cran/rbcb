@@ -17,8 +17,16 @@ rbcb_search <- function(text = "") {
     miniUI::gadgetTitleBar("rbcb search"),
     miniUI::miniContentPanel(
       shiny::textInput("q", "Search:", text),
-      shiny::numericInput("offset", "Offset:", value = 0, min = 0, step = 10),
       shiny::htmlOutput("page_count"),
+      shiny::br(),
+      shiny::div(
+        shiny::strong("Pagination:"), shiny::br(),
+        shiny::actionButton("first_page", "<<"),
+        shiny::actionButton("previous_page", "<"),
+        shiny::span(""),
+        shiny::actionButton("next_page", ">"),
+        shiny::actionButton("last_page", ">>")
+      ),
       shiny::tags$hr(),
       shiny::tableOutput("results")
     )
@@ -26,50 +34,81 @@ rbcb_search <- function(text = "") {
 
   server <- function(input, output, session) {
     page_count <- shiny::reactiveVal(0)
+    offset <- shiny::reactiveVal(0)
+
+    shiny::observeEvent(input$previous_page, {
+      offset(max(offset() - 10, 0))
+    })
+
+    shiny::observeEvent(input$next_page, {
+      offset(offset() + 10)
+    })
+
+    shiny::observeEvent(input$first_page, {
+      offset(0)
+    })
+
+    shiny::observeEvent(input$last_page, {
+      offset(floor(page_count() / 10) * 10)
+    })
+
+    shiny::observeEvent(input$q, {
+      offset(0)
+    })
 
     query_result <- shiny::reactive({
-      url <- parse_url("https://dadosabertos.bcb.gov.br/api/search/dataset")
-      url$query <- list(q = input$q, offset = input$offset, all_fields = 1)
-      res <- GET(url)
-      data <- jsonlite::fromJSON(content(res, as = "text"))
+      data <- search_datasets(q = input$q, offset = offset())
       page_count(data$count)
       data$results
     })
 
     query_codes <- shiny::reactive({
       x <- query_result()
-      sapply(x$res_name, function(.x) {
-        ix <- which(grepl("json_serie-sgs-\\d+", .x))
-        if (length(ix)) {
-          as.numeric(sub("json_serie-sgs-", "", .x[ix]))
-        } else {
+      sapply(x, function(.x) {
+        if (is.null(.x$extras$codigo_sgs)) {
           NA_integer_
+        } else {
+          as.integer(.x$extras$codigo_sgs)
         }
       })
     })
 
     output$page_count <- shiny::renderUI({
-      shiny::tags$strong(paste0(page_count(), " results"))
+      page <- as.integer(offset() / 10) + 1L
+      pages <- ceiling(page_count() / 10)
+      pages_str <- sprintf("(%d/%d pages)", page, pages)
+      shiny::span(
+        page_count(), "results", pages_str
+      )
     })
 
     output$results <- shiny::renderTable({
       df <- query_result()
-      cmds <- sapply(query_codes(), function(x) {
-        if (!is.na(x)) {
+      if (nrow(df) == 0) {
+        return(NULL)
+      }
+      cmds <- sapply(df$cod_sgs, function(x) {
+        if (as.character(x) != "" && length(as.character(x))) {
           paste0("rbcb::get_series(", x, ")")
         } else {
           "NA"
         }
       })
-      data.frame(`Result Title` = df$title,
-                 Name = df$name,
-                 Command = cmds, check.names = FALSE)
+      tibble(
+        `Result Title` = df$title,
+        Id = df$name,
+        Organization = df$organization,
+        Frequency = df$frequency,
+        Units = df$units,
+        Start = df$from,
+        End = df$to,
+        Command = cmds
+      )
     })
 
     shiny::observeEvent(input$done, {
       shiny::stopApp(TRUE)
     })
-
   }
 
   app <- shiny::shinyApp(ui, server, options = list(quiet = TRUE))
@@ -90,7 +129,6 @@ rbcb_search <- function(text = "") {
 #'
 #' @export
 rbcb_dataset <- function(name) {
-
   ui <- miniUI::miniPage(
     miniUI::gadgetTitleBar("rbcb dataset"),
     miniUI::miniContentPanel(
@@ -108,9 +146,7 @@ rbcb_dataset <- function(name) {
 
   server <- function(input, output, session) {
     query_result <- shiny::reactive({
-      url <- paste0("https://dadosabertos.bcb.gov.br/api/rest/dataset/", name)
-      res <- GET(url)
-      jsonlite::fromJSON(content(res, as = "text"))
+      dataset_info(name)
     })
 
     output$title <- shiny::renderUI({
@@ -157,10 +193,8 @@ rbcb_dataset <- function(name) {
     shiny::observeEvent(input$done, {
       shiny::stopApp(TRUE)
     })
-
   }
 
   app <- shiny::shinyApp(ui, server, options = list(quiet = TRUE))
   shiny::runGadget(app, viewer = shiny::dialogViewer("rbcb dataset"))
 }
-
