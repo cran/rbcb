@@ -1,4 +1,4 @@
-b464de4ffce524864fb1817021da5fcc *DESCRIPTION
+7b8c9bb3a494e806b9800fcd8322b1b5 *DESCRIPTION
 b8d3e704bb06bb4d43b0065209a58b32 *LICENSE
 a52705bcff90f0aaac32046e7fc8e4d6 *NAMESPACE
 9b0dd60f8d8d1b53f01ae89dc7154282 *NEWS.md
@@ -47,4 +47,4 @@ c2d4e2e679176dcac42ec0cc3c0cda65 *tests/testthat/test-get_series.R
 4a9404f7bd13f497d861d26632dbd0dc *tests/testthat/test-odata-expectativas.R
 8dc81c54191362dd9a751a16f3fba4b1 *tests/testthat/test-odata-ptax.R
 ccd226213332dd994c229c6e32445033 *tests/testthat/test-sgs.R
-b8a9d48cdcc6976ef019dde816676737 *tests/testthat/test-utils.R
+4a41786b01a7d85866146da501038a88 *tests/testthat/test-utils.R

@@ -1,7 +1,7 @@
 Package: rbcb
 Type: Package
 Title: R Interface to Brazilian Central Bank Web Services
-Version: 0.1.12
+Version: 0.1.13
 Author: Wilson Freitas <wilson.freitas@gmail.com>
 Maintainer: Wilson Freitas <wilson.freitas@gmail.com>
 Description: The Brazilian Central Bank API delivers many datasets which regard economic
@@ -23,6 +23,6 @@ Collate: 'rbcb-package.R' 'rbcb_get.R' 'sgs.R' 'datasets.R' 'addins.R'
         'rbcb_get_currencies.R' 'odata-expectativas.R' 'odata_ptax.R'
 Config/testthat/edition: 3
 NeedsCompilation: no
-Packaged: 2023-09-10 13:33:04 UTC; wilso
+Packaged: 2023-10-12 21:21:36 UTC; wilso
 Repository: CRAN
-Date/Publication: 2023-09-10 13:50:02 UTC
+Date/Publication: 2023-10-12 22:00:02 UTC
