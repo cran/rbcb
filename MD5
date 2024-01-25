@@ -1,7 +1,7 @@
-7b8c9bb3a494e806b9800fcd8322b1b5 *DESCRIPTION
+55d98fa1ccb44f60387af351d821181f *DESCRIPTION
 b8d3e704bb06bb4d43b0065209a58b32 *LICENSE
 a52705bcff90f0aaac32046e7fc8e4d6 *NAMESPACE
-9b0dd60f8d8d1b53f01ae89dc7154282 *NEWS.md
+bb9174ce77c61bcdd1af24d3352597a2 *NEWS.md
 34835531abddbd75f9aac08c2c1c9576 *R/addins.R
 a8e645a2afa1265e3b3a0c634f99698e *R/currency_helpers.R
 54325133b1a1612d689e6bf8b1f7ee37 *R/datasets.R
@@ -11,7 +11,7 @@ d3b2bdbc108473973cc076e539a0c05a *R/odata-expectativas.R
 f259b7d93137cfdae4d30e40690c4a6d *R/rbcb_get.R
 4b0f3194fcb9ed55f39eb465d5e65830 *R/rbcb_get_currencies.R
 a16260bb1543018bcec84e0adb30cac8 *R/rbcb_get_series.R
-4213d0818ba1792230e62d969ec22a78 *R/sgs.R
+31d701c6584ee9859e7fd3bc0aa192a9 *R/sgs.R
 d59c0b52dd4ffbeeb871588a7b40d790 *R/utils.R
 9b8c7417ce53297e70b7962caced454c *README.md
 20a7b9b0955dab7cffc84487ed2e6538 *man/figures/logo.png
@@ -43,8 +43,8 @@ e6c104fade54c1edc8cc0173aeb91734 *man/rbcb_get.Rd
 13b5bfe1ae11b425230ca14463c04b1c *tests/testthat/setup.R
 d7456d159ec448647c868b31602f72e5 *tests/testthat/test-currencies.R
 0ee6bc6794f64e729ef7c6e84a7f4067 *tests/testthat/test-datasets.R
-c2d4e2e679176dcac42ec0cc3c0cda65 *tests/testthat/test-get_series.R
+dc8e04774117b3a13d7fa12da0bf954c *tests/testthat/test-get_series.R
 4a9404f7bd13f497d861d26632dbd0dc *tests/testthat/test-odata-expectativas.R
 8dc81c54191362dd9a751a16f3fba4b1 *tests/testthat/test-odata-ptax.R
-ccd226213332dd994c229c6e32445033 *tests/testthat/test-sgs.R
+57e709ab26a7a45f14470ff24aff70d4 *tests/testthat/test-sgs.R
 4a41786b01a7d85866146da501038a88 *tests/testthat/test-utils.R
